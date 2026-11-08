@@ -1,4 +1,4 @@
-# vas6154mask
+# VASMask
 
 A D-PDU API (ISO 22900-2) shim that lets a VAS5054A interface show up as a
 VAS6154 to an MVCI server. It forwards every call to the real D-PDU API and
@@ -32,6 +32,11 @@ or from a POSIX shell (e.g. Git Bash):
 ```sh
 ./build.sh
 ```
+
+Releases are built by GitHub Actions (`.github/workflows/build.yml`): every
+push is built and tested, and a push to `main` publishes release `v<VERSION>`
+with a zip of `dist\` when that release does not exist yet. To release a new
+version, bump `VERSION`.
 
 The output goes to `dist\` (32-bit) and `dist\x64\` (64-bit). Tests:
 `cd tester; go test .` (some tests read the real D-PDU API files and are
