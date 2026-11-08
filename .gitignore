@@ -1,0 +1,19 @@
+# Build output
+/build/
+/dist/
+*.dll
+*.exe
+*.exe~
+*.lib
+*.pdb
+
+# Runtime logs (contain device serial numbers)
+*.log
+
+# Local machine state (registry exports, D-PDU API root file backups)
+*.reg
+*.before-vas6154mask
+
+# Generated at install time from the user's own Softing MDF/CDF
+MDF_VAS6154_Mask.xml
+CDF_VAS6154_Mask.xml
