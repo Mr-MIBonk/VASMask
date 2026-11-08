@@ -48,6 +48,15 @@ skipped when those are not installed).
 `shim/vas6154shim64.ini` for the documented keys. With `Log=1` the shim writes
 a call log next to the DLL.
 
+## ContiTool
+
+ContiTool (64-bit) loads the `VW_D_PDU_API_OE` library from `rdf64.xml`, so
+it uses the shim once it is installed for ODIS-E. It opens the first ready
+module, which is why the shim lists the masked VCI first. ContiTool only
+trusts VW driver versions it has verified and the shim DLL carries no
+version: tick the driver confirmation in its Connection dialog (CLI:
+`--allow-dpdu-driver`). The VAS5054A behind the shim is not reflashed.
+
 ## Legal notice
 
 This repository contains only original code. It ships no files from Softing,

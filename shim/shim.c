@@ -376,6 +376,15 @@ static void maskModules(PDU_MODULE_ITEM **list)
 			(unsigned long)m->ModuleTypeId, (unsigned long)m->hMod, (unsigned long)m->ModuleStatus, name,
 			(unsigned long)cfgToType, s);
 	}
+	/* Masked modules first: ODIS binds by name, but tools such as ContiTool take
+	 * the first ready module and would open another J2534 device with VAS6154 resources. */
+	for (UNUM32 i = 0, front = 0; i < out->NumEntries; i++) {
+		if (!isMasked(md[i].hMod))
+			continue;
+		PDU_MODULE_DATA m = md[i];
+		memmove(&md[front + 1], &md[front], (i - front) * sizeof m);
+		md[front++] = m;
+	}
 	own(out, (PDU_ITEM *)in);
 	*list = out;
 }
