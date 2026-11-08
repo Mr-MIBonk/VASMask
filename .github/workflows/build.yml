@@ -19,6 +19,7 @@ jobs:
       - uses: actions/setup-go@v5
         with:
           go-version-file: tester/go.mod
+          cache: false # no dependencies to cache
 
       - uses: mlugg/setup-zig@v2
         with:
