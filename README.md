@@ -53,9 +53,9 @@ a call log next to the DLL.
 ContiTool (64-bit) loads the `VW_D_PDU_API_OE` library from `rdf64.xml`, so
 it uses the shim once it is installed for ODIS-E. It opens the first ready
 module, which is why the shim lists the masked VCI first. ContiTool only
-trusts VW driver versions it has verified and the shim DLL carries no
-version: tick the driver confirmation in its Connection dialog (CLI:
-`--allow-dpdu-driver`). The VAS5054A behind the shim is not reflashed.
+connects without a confirmation to VW driver versions it has verified, so the
+64-bit shim DLL carries file version 31.1 (`shim/shim64.rc`), whatever VW
+driver it wraps. The VAS5054A behind the shim is not reflashed.
 
 ## Legal notice
 

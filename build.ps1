@@ -17,7 +17,7 @@ Run $zig @('cc', '-target', 'x86-windows-gnu', '-O2', '-shared', '-Wall',
 # x64 has no stdcall name decoration: export the plain names.
 (Get-Content shim\shim.def) -replace ' = .*', '' | Set-Content -Encoding ascii build\shim64.def
 Run $zig @('cc', '-target', 'x86_64-windows-gnu', '-O2', '-shared', '-Wall',
-	'-o', 'dist\x64\PDUAPI_VAS6154_Shim.dll', 'shim\shim.c', 'build\shim64.def')
+	'-o', 'dist\x64\PDUAPI_VAS6154_Shim.dll', 'shim\shim.c', 'build\shim64.def', 'shim\shim64.rc')
 Remove-Item dist\*.lib, dist\*.pdb, dist\x64\*.lib, dist\x64\*.pdb -ErrorAction SilentlyContinue
 
 if (-not (Test-Path dist\vas6154shim.ini)) { Copy-Item shim\vas6154shim.ini dist\ }

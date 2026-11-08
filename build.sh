@@ -12,7 +12,7 @@ mkdir -p dist dist/x64 build
 # x64 has no stdcall name decoration: export the plain names.
 sed -e 's/ = .*//' shim/shim.def > build/shim64.def
 "$ZIG" cc -target x86_64-windows-gnu -O2 -shared -Wall \
-	-o dist/x64/PDUAPI_VAS6154_Shim.dll shim/shim.c build/shim64.def
+	-o dist/x64/PDUAPI_VAS6154_Shim.dll shim/shim.c build/shim64.def shim/shim64.rc
 rm -f dist/*.lib dist/*.pdb dist/x64/*.lib dist/x64/*.pdb
 
 [ -f dist/vas6154shim.ini ] || cp shim/vas6154shim.ini dist/
