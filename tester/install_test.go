@@ -73,9 +73,16 @@ func TestRestoreRoot64(t *testing.T) {
 		}
 	}
 	patched, _ := patchRoot(root, plat64, f)
-	out, n := restoreRoot(patched)
+	out, n := restoreRoot(patched, "")
 	if n != 2 || out != root {
 		t.Fatalf("restored %d entries:\n%s", n, out)
+	}
+
+	// Shim folder registered in the root file was deleted: the installer's own ini knows the targets.
+	gone, _ := patchRoot(root, plat64, distPaths(filepath.Join(t.TempDir(), "deleted")))
+	out, n = restoreRoot(gone, f.ini)
+	if n != 2 || out != root {
+		t.Fatalf("restored %d entries from fallback ini:\n%s", n, out)
 	}
 }
 

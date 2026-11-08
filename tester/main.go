@@ -260,7 +260,7 @@ func wndProc(hwnd uintptr, m uint32, wp, lp uintptr) uintptr {
 		case idTest:
 			doTest()
 		case idInstall:
-			doElevated("-install", "Installing into ODIS")
+			doElevated("-install", "Installing into "+plat.users)
 		case idUninstall:
 			doElevated("-uninstall", "Restoring original")
 		case idOpenLog:
@@ -291,7 +291,7 @@ func main() {
 		case "-install":
 			err = install(dist)
 		case "-uninstall":
-			err = uninstall()
+			err = uninstall(dist)
 		case "-selftest": // headless test, log written to the file given as next argument
 			var out []string
 			log := func(f string, a ...any) { out = append(out, fmt.Sprintf(f, a...)) }
@@ -329,11 +329,12 @@ func main() {
 		uintptr(unsafe.Pointer(u16("VAS6154 Mask for VAS5054A ("+plat.name+")"))), wsOverlappedWin|wsVisible,
 		0x80000000, 0x80000000, 900, 600, 0, 0, hInst, 0)
 
-	uiFont, _, _ := pCreateFontW.Call(^uintptr(17), 0, 0, 0, 400, 0, 0, 0, 1, 0, 0, 5, 0, uintptr(unsafe.Pointer(u16("Segoe UI"))))
+	// Button font; small enough for "Install into ODIS + ContiTool" on a quarter-width button.
+	uiFont, _, _ := pCreateFontW.Call(^uintptr(13), 0, 0, 0, 400, 0, 0, 0, 1, 0, 0, 5, 0, uintptr(unsafe.Pointer(u16("Segoe UI"))))
 	boldFont, _, _ := pCreateFontW.Call(^uintptr(19), 0, 0, 0, 700, 0, 0, 0, 1, 0, 0, 5, 0, uintptr(unsafe.Pointer(u16("Segoe UI"))))
 	monoFont, _, _ := pCreateFontW.Call(^uintptr(14), 0, 0, 0, 400, 0, 0, 0, 1, 0, 0, 5, 0, uintptr(unsafe.Pointer(u16("Consolas"))))
 
-	labels := []string{"Run test", "Install into ODIS", "Restore original", "Open shim log"}
+	labels := []string{"Run test", "Install into " + plat.users, "Restore original", "Open shim log"}
 	for i, l := range labels {
 		buttons[i], _, _ = pCreateWindowExW.Call(0, uintptr(unsafe.Pointer(u16("BUTTON"))),
 			uintptr(unsafe.Pointer(u16(l))), wsChild|wsVisible, 0, 0, 0, 0, hwndMain, uintptr(idTest+i), hInst, 0)

@@ -24,6 +24,8 @@ type platform struct {
 	ownMDF bool
 	// Driver the APIs point to originally, shown in the GUI.
 	original string
+	// Programs that use the shim once it is installed, shown in the GUI.
+	users string
 }
 
 var plat32 = platform{
@@ -32,6 +34,7 @@ var plat32 = platform{
 	apis:     []string{"XS_D_PDU_API_OE", "XS_D_PDU_API_OS"},
 	ownMDF:   true,
 	original: "ACTIA VAS6154 driver",
+	users:    "ODIS",
 }
 
 var plat64 = platform{
@@ -39,6 +42,8 @@ var plat64 = platform{
 	rootFile: `C:\ProgramData\D-PDU API\rdf64.xml`,
 	apis:     []string{"VW_D_PDU_API_OE", "VW_D_PDU_API_OS"}, // ODIS-E, ODIS-S
 	original: "VW D-PDU API",
+	// ContiTool loads VW_D_PDU_API_OE from rdf64.xml.
+	users: "ODIS + ContiTool",
 }
 
 // plat is the platform matching this build: a 32-bit process can only load the
@@ -106,13 +111,18 @@ func iniSet(ini, section, key, value string) error {
 }
 
 // originalLibrary is the real D-PDU API behind lib: lib itself, or for a shim
-// the Target of its ini section (falling back to [shim]).
-func originalLibrary(lib string) string {
+// the Target of its ini section (falling back to [shim]). When that shim and
+// its ini are gone (install folder moved or deleted), the same section of
+// fallbackIni, the ini of the running installer, is used.
+func originalLibrary(lib, fallbackIni string) string {
 	if !isShim(lib) {
 		return lib
 	}
 	ini := filepath.Join(filepath.Dir(lib), "vas6154shim.ini")
-	return iniGet(ini, iniSection(lib), "Target", iniGet(ini, "shim", "Target", ""))
+	if t := iniGet(ini, iniSection(lib), "Target", iniGet(ini, "shim", "Target", "")); t != "" {
+		return t
+	}
+	return iniGet(fallbackIni, iniSection(lib), "Target", "")
 }
 
 func fileURI(p string) string {
@@ -206,14 +216,14 @@ func patchRoot(xml string, p platform, f distFiles) (string, int) {
 }
 
 // restoreRoot points every shim entry back to the D-PDU API it wraps.
-func restoreRoot(xml string) (string, int) {
+func restoreRoot(xml, fallbackIni string) (string, int) {
 	n := 0
 	out := apiBlock.ReplaceAllStringFunc(xml, func(b string) string {
 		m := libraryFile.FindStringSubmatch(b)
 		if m == nil || !isShim(uriPath(m[1])) {
 			return b
 		}
-		if orig := originalLibrary(uriPath(m[1])); orig != "" {
+		if orig := originalLibrary(uriPath(m[1]), fallbackIni); orig != "" {
 			n++
 			b = strings.Replace(b, m[0], `<LIBRARY_FILE URI="`+fileURI(orig)+`"`, 1)
 		}
@@ -261,7 +271,7 @@ func installCopies(xml string, f distFiles) error {
 		if lib == "" {
 			continue
 		}
-		target := originalLibrary(lib)
+		target := originalLibrary(lib, f.ini)
 		if target == "" {
 			return fmt.Errorf("%s: real D-PDU API behind %s unknown", api, lib)
 		}
@@ -310,7 +320,7 @@ func install(f distFiles) error {
 	return os.WriteFile(plat.rootFile, []byte(out), 0o644)
 }
 
-func uninstall() error {
+func uninstall(f distFiles) error {
 	if !plat.ownMDF {
 		// Only the library entries were changed; restoring the whole backup
 		// would also drop APIs registered after it was taken (e.g. ODIS-S).
@@ -318,7 +328,7 @@ func uninstall() error {
 		if err != nil {
 			return err
 		}
-		out, _ := restoreRoot(string(b))
+		out, _ := restoreRoot(string(b), f.ini)
 		if err := os.WriteFile(plat.rootFile, []byte(out), 0o644); err != nil {
 			return err
 		}
